@@ -19,7 +19,10 @@ AventureWorksLT is simpler in the following ways:
 * Instead of 5 schemas plus dbo in the database, AdventureWorksLT has one schema plus dbo in the database.
 * Instead of 70 tables, AdventureWorksLT has 12 tables.
 
-<b>Sample Queries</b>
+
+Sample Queries
+/----------------------------------------------------------------------------------------
+
 SELECT * FROM SalesLT.Customer;
 
 SELECT * FROM SalesLT.Customer WHERE FirstName = N'Mary';
@@ -46,3 +49,21 @@ WHERE FirstName = N'Walter'
 GROUP BY C.LastName;
 
 SELECT * from SalesLT.vGetAllCategories
+/----------------------------------------------------------------------------------------
+
+Features
+/----------------------------------------------------------------------------------------
+
+Customer Features.
+
+Scenario: view customer list
+Given valid customers exist
+When I view the "customer list" page
+Then I should see a list of customers
+
+Scenario: view customer orders
+Given a customer "David Hodgson" with orders
+When I view the "customer list" page
+And I view "David Hodgson" orders 
+Then I should see a list of orders
+
