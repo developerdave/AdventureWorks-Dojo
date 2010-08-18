@@ -1,0 +1,128 @@
+<!--
+***********************************************************************************************
+Microsoft.CompactFramework.VisualBasic.v1.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (C) Microsoft Corporation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <TargetFrameworkVersion>v1.0</TargetFrameworkVersion>
+        <UseHostCompilerIfAvailable>false</UseHostCompilerIfAvailable>
+        <DocumentationFile/>
+    </PropertyGroup>
+    <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.VisualBasic.Targets" />
+
+
+    <UsingTask TaskName="Vbc"                                          AssemblyName="Microsoft.CompactFramework.Build.Tasks, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <UsingTask TaskName="Microsoft.Build.Tasks.CFResGen"               AssemblyName="Microsoft.CompactFramework.Build.Tasks, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <UsingTask TaskName="Microsoft.Build.Tasks.ALV1"                   AssemblyName="Microsoft.CompactFramework.Build.Tasks, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+
+    <!--
+        Run CF resgen on the given resx files.
+
+        This task checks timestamps internally for the .resx files as well as any linked files that are
+        referenced in the .resx file against the .resources file, so it does not need to specify Inputs
+        or Outputs in the Target.
+
+            [IN]
+            @(ResxWithNoCulture) - The names the non-culture .RESX files.
+            @(ResxWithCulture) - The names the culture .RESX files.
+            @(ManifestResourceWithNoCultureName) - The corresponding manifest resource name (.RESOURCE)
+            @(ManifestResourceWithCultureName) - The corresponding manifest resource name (.RESOURCE)
+
+            [OUT]
+            @(ManifestResourceWithNoCulture) - The path to the corresponding .RESOURCE  files
+            @(ManifestResourceWithCulture) - The path to the corresponding .RESOURCE  files
+    -->
+    <Target
+        Name="CoreResGen"
+        DependsOnTargets="$(CoreResGenDependsOn)">
+
+        <CFResGen
+            Condition=" '@(ResxWithNoCulture)' != '' "
+            Sources="@(ResxWithNoCulture)"
+            UseSourcePath="$(UseSourcePath)"
+            StateFile="$(IntermediateOutputPath)$(MSBuildProjectFile).GenerateResource.Cache"
+            OutputResources="@(ManifestResourceWithNoCultureName->'$(IntermediateOutputPath)%(Identity).resources')"
+        >
+            <Output TaskParameter="OutputResources" ItemName="ManifestResourceWithNoCulture"/>
+            <Output TaskParameter="FilesWritten" ItemName="FileWrites"/>
+        </CFResGen>
+
+        <CFResGen
+            Condition=" '@(ResxWithCulture)' != '' "
+            Sources="@(ResxWithCulture)"
+            UseSourcePath="$(UseSourcePath)"
+            StateFile="$(IntermediateOutputPath)$(MSBuildProjectFile).GenerateResource.Cache"
+            OutputResources="@(ManifestResourceWithCultureName->'$(IntermediateOutputPath)%(Identity).resources')"
+        >
+            <Output TaskParameter="OutputResources" ItemName="ManifestResourceWithCulture"/>
+            <Output TaskParameter="FilesWritten" ItemName="FileWrites"/>
+        </CFResGen>
+    </Target>
+
+    <Target
+        Name="CreateSatelliteAssemblies"
+        Condition="'@(ManifestResourceWithCulture)'!='' or '@(ManifestNonResxWithCultureOnDisk)'!=''"
+        Inputs="@(ManifestResourceWithCulture);@(ManifestNonResxWithCultureOnDisk);$(IntermediateOutputPath)$(TargetName)$(TargetExt)"
+        Outputs="$(IntermediateOutputPath)%(Culture)\$(TargetName).resources.dll"
+        DependsOnTargets="$(CreateSatelliteAssembliesDependsOn)"
+     >
+        <MakeDir
+            Directories="$(IntermediateOutputPath)%(ManifestResourceWithCulture.Culture)"
+            Condition=" '@(ManifestResourceWithCulture)' != '' "
+            />
+
+        <MakeDir
+            Directories="$(IntermediateOutputPath)%(ManifestNonResxWithCultureOnDisk.Culture)"
+            Condition=" '@(ManifestNonResxWithCultureOnDisk)' != '' "
+            />
+
+        <ALV1
+            AlgorithmId="$(Satellite_AlgorithmId)"
+            BaseAddress="$(Satellite_BaseAddress)"
+            CompanyName="$(Satellite_CompanyName)"
+            Configuration="$(Satellite_Configuration)"
+            Copyright="$(Satellite_Copyright)"
+            Culture="%(Culture)"
+            DelaySign="$(DelaySign)"
+            Description="$(Satellite_Description)"
+            EmbedResources="@(ManifestResourceWithCulture);@(ManifestNonResxWithCultureOnDisk)"
+            EvidenceFile="$(Satellite_EvidenceFile)"
+            FileVersion="$(Satellite_FileVersion)"
+            Flags="$(Satellite_Flags)"
+            GenerateFullPaths="$(Satellite_GenerateFullPaths)"
+            KeyContainer="$(KeyContainerName)"
+            KeyFile="$(KeyOriginatorFile)"
+            LinkResources="@(Satellite_LinkResource)"
+            MainEntryPoint="$(Satellite_MainEntryPoint)"
+            OutputAssembly="$(IntermediateOutputPath)%(Culture)\$(TargetName).resources.dll"
+            Platform="$(PlatformTarget)"
+            ProductName="$(Satellite_ProductName)"
+            ProductVersion="$(Satellite_ProductVersion)"
+            ResponseFiles="@(AlResponseFile)"
+            SourceModules="@(Satellite_SourceModule)"
+            TargetType="$(Satellite_TargetType)"
+            TemplateFile="$(IntermediateOutputPath)$(TargetName)$(TargetExt)"
+            Title="$(Satellite_Title)"
+            ToolPath="$(AlToolPath)"
+            Trademark="$(Satellite_Trademark)"
+            Version="$(Satellite_Version)"
+            Win32Icon="$(Satellite_Win32Icon)"
+            Win32Resource="$(Satellite_Win32Resource)">
+
+            <Output
+                TaskParameter="OutputAssembly"
+                ItemName="FileWrites"/>
+        </ALV1>
+
+    </Target>
+
+
+</Project>

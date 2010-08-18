@@ -1,0 +1,162 @@
+﻿<!--
+***********************************************************************************************
+Microsoft.CompactFramework.common.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (C) Microsoft Corporation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <UsingTask TaskName="Microsoft.CompactFramework.Build.Tasks.GetDeviceFrameworkPath"   AssemblyName="Microsoft.CompactFramework.Build.Tasks, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <UsingTask TaskName="Microsoft.CompactFramework.Build.Tasks.BuildAsmmeta"             AssemblyName="Microsoft.CompactFramework.Build.Tasks, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <UsingTask TaskName="Microsoft.CompactFramework.Build.Tasks.PlatformVerificationTask" AssemblyName="Microsoft.CompactFramework.Build.Tasks, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <UsingTask TaskName="Microsoft.CompactFramework.Build.Tasks.AddHighDPIResource"       AssemblyName="Microsoft.CompactFramework.Build.Tasks, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+
+    <Target
+        Name="GetFrameworkPaths"
+        DependsOnTargets="$(GetFrameworkPathsDependsOn)"
+     >
+        <GetDeviceFrameworkPath
+            FrameworkRegistryBase="$(FrameworkRegistryBase)"
+            RuntimeVersion="$(TargetFrameworkVersion)"
+            AssemblyFoldersSuffix="$(AssemblyFoldersSuffix)">
+            <Output TaskParameter="Path" PropertyName="TargetFrameworkDirectory"/>
+            <Output TaskParameter="Path" ItemName="TargetFrameworkDirectoryItem"/>
+            <Output TaskParameter="Path" PropertyName="TargetFrameworkSDKDirectory"/>
+            <Output TaskParameter="Path" ItemName="TargetFrameworkSDKDirectoryItem"/>
+        </GetDeviceFrameworkPath>
+
+        <CreateProperty Value="$(TargetFrameworkDirectory)">
+            <Output TaskParameter="Value" PropertyName="FrameworkPathOverride"/>
+        </CreateProperty>
+    </Target>
+
+    <!-- Override for GetReferenceAssemblyPaths in Microsoft.common.targets.
+         For device projects, GetFrameworkPaths target is overridden (see above) 
+         to populate the TargetFrameworkDirectory with paths containing reference 
+         assemblies for device platforms.Device projects should not refer 
+         desktop assemblies.
+    -->
+    <Target Name="GetReferenceAssemblyPaths" />
+
+    <Target
+        Name="AuthenticodeSign"
+        Condition="'$(EnableSigning)'=='true' and '$(SigningCertHash)'!=''">
+
+        <SignFile
+            CertificateThumbprint="$(SigningCertHash)"
+            TimestampUrl="$(SigningTimestampUrl)"
+            SigningTarget="@(IntermediateAssembly)"
+        />
+
+        <SignFile
+            Condition="'@(IntermediateSatelliteAssembliesWithTargetPath)'!=''"
+            CertificateThumbprint="$(SigningCertHash)"
+            TimestampUrl="$(SigningTimestampUrl)"
+            SigningTarget="%(IntermediateSatelliteAssembliesWithTargetPath.FullPath)"
+        />
+    </Target>
+
+    <Target
+        Name="BuildAsmmeta"
+        Condition="'@(None)'!=''">
+        <BuildAsmmeta
+            XmlSource="@(None)"
+            Condition=" '%(None.Extension)' == '.xmta' "
+            KeyFile="$(AssemblyOriginatorKeyFile)"
+            PlatformFamilyName="$(PlatformFamilyName)"
+            PlatformID="$(PlatformID)"
+            NDPVersion="$(TargetFrameworkVersion)"
+            SourceAssembly="@(IntermediateAssembly)"
+            ReferencePath="@(ReferencePath)"
+        >
+            <Output TaskParameter="AsmmetaFile" PropertyName="AsmmetaFile" />
+        </BuildAsmmeta>
+    </Target>
+
+    <!--
+    Copy asmmeta files to output directory.
+    -->
+    <Target
+        Name="CopyAsmmetaFilesToOutputDirectory"
+        DependsOnTargets="BuildAsmmeta;CopyFilesToOutputDirectory">
+
+        <!-- Copy the asmmeta files (*.asmmeta*.dll file) -->
+        <Copy
+            Condition="'$(AsmmetaFile)'!=''"
+            SourceFiles="$(AsmmetaFile)"
+            DestinationFolder="$(OutDir)"
+            SkipUnchangedFiles="true"
+        >
+            <Output TaskParameter="DestinationFiles" ItemName="OutputAsmmetaFile"/>
+        </Copy>
+    </Target>
+
+    <Target
+        Name="PlatformVerificationTask">
+        <PlatformVerificationTask
+            PlatformFamilyName="$(PlatformFamilyName)"
+            PlatformID="$(PlatformID)"
+            SourceAssembly="@(IntermediateAssembly)"
+            ReferencePath="@(ReferencePath)"
+            TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
+            PlatformVersion="$(TargetFrameworkVersion)"/>
+    </Target>
+
+    <PropertyGroup>
+        <ShouldAddHighDPIResource Condition="'$(TargetExt)_and_$(HighDPIResAware)_and_$(Win32Resource)'=='.exe_and_true_and_'">true</ShouldAddHighDPIResource>
+        <ShouldAddHighDPIResource Condition="'$(TargetExt)_and_$(HighDPIResAware)_and_$(Win32Resource)_and_$(PlatformFamilyName)'=='.exe_and__and__and_PocketPC'">true</ShouldAddHighDPIResource>
+        <ShouldAddHighDPIResource Condition="'$(TargetFrameworkVersion)'=='v1.0'">false</ShouldAddHighDPIResource>
+    </PropertyGroup>
+
+    <Target
+        Name="AddHighDPIResource" Condition="'$(ShouldAddHighDPIResource)'=='true'">
+        <AddHighDPIResource
+            Win32Resource="$(Win32Resource)"
+            ApplicationIcon="$(ApplicationIcon)"
+            OutputDirectory="$(IntermediateOutputPath)">
+            <Output TaskParameter="Win32Resource" PropertyName="Win32Resource" />
+            <Output TaskParameter="ApplicationIcon" PropertyName="ApplicationIcon" />
+        </AddHighDPIResource>
+    </Target>
+
+    <PropertyGroup>
+        <!-- this value sets the default url behavior for newly added web references -->
+        <DefaultUrlBehavior>Static</DefaultUrlBehavior>
+
+        <!-- this value disables ApplicationSettings support. -->
+        <SupportApplicationSettings>false</SupportApplicationSettings>
+
+        <!-- Add our extra post-build tasks. -->
+        <CoreBuildDependsOn>$(CoreBuildDependsOn);PlatformVerificationTask;BuildAsmmeta</CoreBuildDependsOn>
+
+        <!-- Run the AddHighDPIResource target for v2 projects only -->
+        <CoreBuildDependsOn Condition="'TargetFrameworkVersion'!='v1.0'">AddHighDPIResource;$(CoreBuildDependsOn)</CoreBuildDependsOn>
+    </PropertyGroup>
+
+    <!--
+    Copy the build outputs to the final directory if they have changed.
+    Overwrite to include copying asmmeta files built.
+    -->
+    <PropertyGroup>
+        <PrepareForRunDependsOn>
+            AuthenticodeSign;
+            $(PrepareForRunDependsOn);
+            CopyAsmmetaFilesToOutputDirectory
+        </PrepareForRunDependsOn>
+    </PropertyGroup>
+
+    <!--
+    AvailablePlatforms is the list of platform targets available.
+    -->
+    <PropertyGroup>
+        <AvailablePlatforms>Any CPU</AvailablePlatforms>
+        <CustomAfterMicrosoftCompactFrameworkCommonTargets Condition="'$(CustomAfterMicrosoftCompactFrameworkCommonTargets)'==''">$(MSBuildExtensionsPath)\v2.0\Custom.After.Microsoft.CompactFramework.Common.targets</CustomAfterMicrosoftCompactFrameworkCommonTargets>
+    </PropertyGroup>
+
+    <Import Project="$(CustomAfterMicrosoftCompactFrameworkCommonTargets)" Condition="Exists('$(CustomAfterMicrosoftCompactFrameworkCommonTargets)')"/>
+</Project>

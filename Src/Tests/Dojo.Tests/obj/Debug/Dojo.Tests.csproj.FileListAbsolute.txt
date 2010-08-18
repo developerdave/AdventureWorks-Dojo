@@ -1,0 +1,11 @@
+C:\Code\C-CodingDojo\Src\Tests\Dojo.Tests\bin\Debug\Dojo.Tests.dll
+C:\Code\C-CodingDojo\Src\Tests\Dojo.Tests\bin\Debug\Dojo.Tests.pdb
+C:\Code\C-CodingDojo\Src\Tests\Dojo.Tests\bin\Debug\Dojo.Web.dll
+C:\Code\C-CodingDojo\Src\Tests\Dojo.Tests\bin\Debug\MvcContrib.TestHelper.dll
+C:\Code\C-CodingDojo\Src\Tests\Dojo.Tests\bin\Debug\nunit.framework.dll
+C:\Code\C-CodingDojo\Src\Tests\Dojo.Tests\bin\Debug\Rhino.Mocks.dll
+C:\Code\C-CodingDojo\Src\Tests\Dojo.Tests\bin\Debug\Rhino.Mocks.xml
+C:\Code\C-CodingDojo\Src\Tests\Dojo.Tests\bin\Debug\Dojo.Web.pdb
+C:\Code\C-CodingDojo\Src\Tests\Dojo.Tests\obj\Debug\ResolveAssemblyReference.cache
+C:\Code\C-CodingDojo\Src\Tests\Dojo.Tests\obj\Debug\Dojo.Tests.dll
+C:\Code\C-CodingDojo\Src\Tests\Dojo.Tests\obj\Debug\Dojo.Tests.pdb

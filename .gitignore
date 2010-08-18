@@ -1,0 +1,7 @@
+Dojo.4.5.resharper.user
+Dojo.sln.cache
+Dojo.suo
+_ReSharper.Dojo/*
+obj/*
+Src/Code/Dojo.Web/bin/*
+Src/Test/Dojo.Tests/bin/*
