@@ -18,3 +18,31 @@ AventureWorksLT is simpler in the following ways:
 * The quantity of data is reduced from 180mb down to 7mb.
 * Instead of 5 schemas plus dbo in the database, AdventureWorksLT has one schema plus dbo in the database.
 * Instead of 70 tables, AdventureWorksLT has 12 tables.
+
+<b>Sample Queries</b>
+SELECT * FROM SalesLT.Customer;
+
+SELECT * FROM SalesLT.Customer WHERE FirstName = N'Mary';
+
+SELECT LastName FROM SalesLT.Customer 
+WHERE FirstName = N'Mary';
+
+SELECT LastName FROM SalesLT.Customer 
+WHERE FirstName = N'Mary' 
+ORDER BY LastName;
+
+SELECT C.FirstName, C.MiddleName, C.LastName, C.CompanyName, 
+A.AddressLine1, A.AddressLine2, A.City, A.StateProvince, 
+A.CountryRegion, A.PostalCode 
+FROM SalesLT.Customer AS C
+JOIN SalesLT.CustomerAddress AS CA ON C.CustomerID = CA.CustomerID
+JOIN SalesLT.Address AS A ON CA.AddressID = A.AddressID
+WHERE C.FirstName = N'Mary';
+
+SELECT C.LastName, Sum(SOH.TotalDue) 
+FROM SalesLT.Customer AS C
+JOIN SalesLT.SalesOrderHeader AS SOH ON C.CustomerID = SOH.CustomerID
+WHERE FirstName = N'Walter'
+GROUP BY C.LastName;
+
+SELECT * from SalesLT.vGetAllCategories
