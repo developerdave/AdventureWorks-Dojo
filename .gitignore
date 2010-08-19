@@ -4,4 +4,5 @@ Dojo.suo
 _ReSharper.Dojo/*
 obj/*
 Src/Code/Dojo.Web/bin/*
-Src/Test/Dojo.Tests/bin/*
+Src/Tests/Dojo.Tests/bin/*
+Src/Code/Dojo.Web/obj/*
