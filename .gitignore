@@ -6,3 +6,4 @@ obj/*
 Src/Code/Dojo.Web/bin/*
 Src/Tests/Dojo.Tests/bin/*
 Src/Code/Dojo.Web/obj/*
+Src/Code/Dojo.Web/obj/Debug/*
