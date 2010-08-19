@@ -11,8 +11,8 @@ class DatabaseCleaner
   end
 
   def reset_database
-    holidays_tables = [ ]
+    adventure_works_tables = [ ]
 
-	delete_all_data(HolidaysDb, holidays_tables)
+	delete_all_data(AdventureWorksLT2008, adventure_works_tables)
   end
 end
