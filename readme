@@ -57,13 +57,31 @@ Features
 Customer Features.
 
 Scenario: view customer list
-Given valid customers exist
-When I view the "customer list" page
-Then I should see a list of customers
+	Given valid customers exist
+	When I view the "customer list" page
+	Then I should see a list of customers
 
 Scenario: view customer orders
-Given a customer "David Hodgson" with orders
-When I view the "customer list" page
-And I view "David Hodgson" orders 
-Then I should see a list of orders
+	Given a customer "David Hodgson" with orders
+	When I view the "customer list" page
+	And I view "David Hodgson" orders 
+	Then I should see a list of orders
+
+Scenario: search customer list
+	Given the following customers exist
+		|Title	|FirstName	|MiddleName	|LastName	|
+		|Mr		|Dave		|Steven		|Green		|
+		|Mr		|Dave		|NULL		|Smith		|
+		|Ms		|Mary		|NULL		|Alexander	|
+	When I type "Dave" into the customer search
+	Then I should see the following customers
+		|Title	|FirstName	|MiddleName	|LastName	|
+		|Mr		|Dave		|Steven		|Green		|
+		|Mr		|Dave		|NULL		|Smith		|
+		
+Scenario: customer login
+	Given a customer "David Hodgson" with the username "david.hodgson" and the password "secret"
+	When I go to the login page
+	And I enter the username "david.hodgson" and the password "secret"
+	Then I should be taken to the "my orders" page
 
